@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { AssemblyAI } from 'assemblyai';
 import * as dotenv from 'dotenv';
 dotenv.config();
+
+export const runtime = 'edge'; // 'nodejs' is the default
 export async function POST(req: Request, res: Response) {
      const apiKey = process.env.ASSEMBLY_API_KEY || '';
 
