@@ -112,7 +112,10 @@ const transcribeAudio = async () => {
       const data = await response.json();
       setTranscribedText(data.transcript);
       setIsTranscribing(false);
-         router.push(`/transcribe/${data.transcript}`);
+      const encodedUrl = encodeURIComponent(data.transcript)
+      console.log("encodedUrl", encodedUrl);
+      
+         router.push(`/transcribe/${encodedUrl}`)
     
     } else {
       setIsTranscribing(false);

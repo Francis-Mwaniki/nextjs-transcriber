@@ -28,14 +28,9 @@ console.log("audio url is required");
 
 const transcript = await client.transcripts.create(data);
 
- if(transcript.text){
-  const sentences = transcript.text.split(', ');
-  const text = sentences.join('.\n\n');
-  console.log("text", text);
-
-  
+ if(transcript){
   return NextResponse.json({
-    transcript: text,
+    transcript: transcript.text,
     status: 200
   })
 }
