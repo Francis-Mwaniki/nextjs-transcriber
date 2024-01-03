@@ -50,10 +50,8 @@ const transcribeAudio = async () => {
       const data = await response.json();
       setTranscribedText(data.transcript);
       setIsTranscribing(false);
-
-      setTimeout(() => {
-        return router.push(`/transcribe/${data.transcript}`);
-      }, 100);
+         router.push(`/transcribe/${data.transcript}`);
+    
     } else {
       setIsTranscribing(false);
       console.log(response);
