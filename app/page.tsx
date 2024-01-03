@@ -1,113 +1,165 @@
-import Image from 'next/image'
+"use client";
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import React from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 
-export default function Home() {
+import { Input } from '@/components/ui/input';
+import { Loader } from 'lucide-react';
+
+type Props = {}
+
+const Home = (props: Props) => {
+  const router = useRouter();
+const [transcribedText, setTranscribedText] = React.useState<string>('')
+const [audioUrl, setAudioUrl] = React.useState<string>('')
+const [loading, setLoading] = React.useState<boolean>(false)
+const [error, setError] = React.useState<string>('')
+const [showModal, setShowModal] = React.useState<boolean>(false)
+const [isTranscribing,setIsTranscribing] =React.useState<boolean>(false)
+
+const transcribeAudio = async () => {
+  setIsTranscribing(true);
+  try {
+    const response = await fetch('/api/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ audioUrl: 'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3' })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setTranscribedText(data.transcript);
+      setIsTranscribing(false);
+
+      setTimeout(() => {
+        return router.push(`/transcribe/${data.transcript}`);
+      }, 100);
+    } else {
+      setIsTranscribing(false);
+      console.log(response);
+    }
+  } catch (error) {
+    setIsTranscribing(false);
+    console.error('Error:', error);
+  }
+};
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <>
+     <div className='min-h-screen  flex justify-center items-center m-auto flex-col gap-y-2'>
+        <h1 className='text-4xl font-bold '>Transcribe your audio</h1>
+        <p className='text-lg pb-3'>Upload an audio file and we&apos;ll transcribe it for you</p>
+
+
+    <Dialog >
+    <DialogTrigger>
+      <a  className='bg-neutral-950 text-white p-3 rounded-md'
+      onClick={() => setShowModal(true)}>
+        Upload Audio
+      </a>
+    </DialogTrigger>
+    {
+  showModal && (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>
+          Choose a file
+        </DialogTitle>
+        <DialogDescription>
+        <div className='flex flex-col'>
+            <Input type='file' accept='audio/*' 
+            onChange={(e) => {
+              e.preventDefault()
+             
+              const file = e.target.files?.[0]
+              if(file) {
+                const url = URL.createObjectURL(file)
+                setAudioUrl(url)
+                setShowModal(false)
+                console.log("url", url);
+                
+              }
+            }}
             />
-          </a>
-        </div>
-      </div>
+            </div>
+        </DialogDescription>
+      </DialogHeader>
+    </DialogContent>
+     )
+    }
+  </Dialog>
+ 
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
+     {
+       audioUrl && (
+          <div className='flex flex-col gap-y-3 p-3'>
+            <audio controls src={audioUrl}></audio>
+            <Button onClick={() => transcribeAudio()}
+           
+            >
+              {
+                isTranscribing ? (
+                  <Loader className='text-neutral-100 animate-spin' size={32} />
+                ) : (
+                  'Transcribe'
+                )
+              }
+            </Button>
+          </div>
+       )
+     }
+     </div>
+
+     {
+        isTranscribing && (
+          <Drawer
+          open={isTranscribing}
+          onClose={() => setIsTranscribing(false)}
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+          <DrawerContent className='flex flex-col justify-center items-center mx-auto gap-y-2'>
+            <DrawerHeader>
+              <DrawerTitle>Transcribing</DrawerTitle>
+              <DrawerDescription>
+                Please wait while we transcribe your audio
+              </DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter>
+             <Loader className='text-neutral-800 animate-spin' size={32} />
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+        )
+     }
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+   
+
+    
+    </>
+    
   )
 }
+
+export default Home
