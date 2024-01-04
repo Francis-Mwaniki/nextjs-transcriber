@@ -1,8 +1,9 @@
 "use client"
 import { Button } from '@/components/ui/button';
-import { Home, MenuIcon, Play, Share, StopCircle, Trash, X } from 'lucide-react';
+import { DownloadCloudIcon, Home, MenuIcon, Play, Share, StopCircle, Trash, X } from 'lucide-react';
  import React, { useEffect, useRef, useState } from 'react';
  import { ArrowLeft, Check, Copy, Link } from 'lucide-react';
+ import { saveAs } from 'file-saver';
  // Import necessary modules
  import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -41,7 +42,6 @@ const LipSync  = ({ params }: Props) => {
 
 
 
-  
 
   // const decodedText = decodeURIComponent(text).split('+').join(' ');
 
@@ -210,6 +210,13 @@ const paragraphWithBreaks = groupedSentences
     router.push('/')
   }
  
+  const handleExportPDF = () => {
+   //use file saver
+    const textToExport = paragraphWithBreaks;
+    const blob = new Blob([textToExport], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, 'audio-text.txt');
+  };
+
  
 
   return (
@@ -316,6 +323,15 @@ onClick={() => {
   <Share className='text-neutral-100 cursor-pointer' size={24} />
   <span className='text-neutral-100 text-sm'>Share</span>
 </Button>
+<Button onClick={handleExportPDF} className='bg-neutral-700 cursor-pointer z-10 w-[140px]  flex gap-x-2  '>
+        <DownloadCloudIcon size={30}
+         className={`
+          text-white
+        `}  />
+        <span className=' text-white text-lg'>
+          Export <span className=' text-xs'>(txt)</span>
+        </span>
+      </Button>
 <Button onClick={handleDelete} className=' bg-neutral-700 cursor-pointer z-10 w-[140px] flex gap-x-2'>
         <Trash size={30}
         
@@ -333,18 +349,21 @@ onClick={() => {
      
      </div>
 
-      <div className="mt-4 sm:absolute sm:w-[80%] w-[100%] sm:left-[20%] px-2 sm:overflow-hidden sm:bg-white rounded-lg">
-      
-        <div className=' overflow-y-auto sm:max-h-[500px] max-h-[90%] bg-neutral-100 max-w-[100%]  m-auto sm:p-3 p-3  rounded-lg'>
+      <div className="mt-4  sm:absolute sm:w-[80%] w-[100%] sm:left-[20%] px-2 sm:overflow-hidden sm:bg-white rounded-lg">
+    
+        <div id="textToExport" className=' overflow-y-auto sm:max-h-[500px] max-h-[90%] bg-neutral-100 max-w-[100%]  m-auto sm:p-3 p-3  rounded-lg '>
           <h1 className='text-3xl font-bold text-center my-2'>Audio Text</h1>
         <div className='flex flex-col justify-center items-center mx-auto gap-y-2 sm:shadow-none shadow'>
         <div className='text-neutral-800 text-center px-1 sm:px-5 rounded-lg py-2  sm:max-w-[80%] sm:shadow shadow-none' style={{ textAlign: 'justify', whiteSpace: 'pre-wrap' }}>
       {paragraphWithBreaks}
     </div>
+    
+    
+
     </div>
           </div>
            {/* francis mwaniki  copyright*/}
-
+        
         <div className='flex flex-row justify-center items-center gap-x-1 bg-neutral-100 py-2'>
           <span className='text-neutral-700 text-sm'>Made with ❤️ by</span>
           <a href='https://www.francismwaniki.tech' target='_blank' className='text-neutral-700 text-sm'>Francis Mwaniki</a>
