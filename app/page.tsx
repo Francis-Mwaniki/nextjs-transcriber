@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/drawer"
 
 import { Input } from '@/components/ui/input';
-import { Loader } from 'lucide-react';
+import { Edit, Edit3, Loader } from 'lucide-react';
 
 type Props = {}
 
@@ -38,10 +38,11 @@ const [uploading, setupLoading] = React.useState<boolean>(false)
 const [error, setError] = React.useState<string>('')
 const [showModal, setShowModal] = React.useState<boolean>(false)
 const [isTranscribing,setIsTranscribing] =React.useState<boolean>(false)
+const [showCookiesOnFirstVisit, setShowCookiesOnFirstVisit] = React.useState<boolean>(true)
 
 const uploadFile = async (file: string | Blob) => {
   setupLoading(true);
-  toast.success('Uploading to Cloudinary');
+  toast.success('Uploading started...');
   const cloudName = 'dzvtkbjhc'; // Replace with your Cloudinary cloud name
   const unsignedUploadPreset = 'c5gngmqw'; // Replace with your Cloudinary unsigned upload preset
 
@@ -74,14 +75,14 @@ const uploadFile = async (file: string | Blob) => {
       return url;
     } else {
       setupLoading(false);
-      console.error('Failed to upload to Cloudinary:', response.statusText);
-      toast.error('Failed to upload to Cloudinary');
+      console.error('Failed to upload:', response.statusText);
+      toast.error('Failed to upload');
       return null;
     }
   } catch (error) {
     setupLoading(false);
-    toast.error('Error uploading to Cloudinary');
-    console.error('Error uploading to Cloudinary:', error);
+    toast.error('Error uploading ');
+    console.error('Error uploading :', error);
     return null;
   }
 };
@@ -104,15 +105,18 @@ const transcribeAudio = async () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      /* 'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3' */
-      body: JSON.stringify({ audioUrl:  cloudinaryUrl })
+      /*  'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3' */ 
+      body: JSON.stringify({ audioUrl: cloudinaryUrl })
     });
 
     if (response.ok) {
       const data = await response.json();
       setTranscribedText(data.transcript);
+      localStorage.setItem('transcribedText', data.transcript);
+      localStorage.setItem('audioUrl', cloudinaryUrl);
       setIsTranscribing(false);
-      const encodedUrl = encodeURIComponent(data.transcript)
+      //trim to 30 words
+      const encodedUrl = encodeURIComponent(data.transcript.slice(0, 30));
       console.log("encodedUrl", encodedUrl);
       
          router.push(`/transcribe/${encodedUrl}`)
@@ -138,18 +142,65 @@ useEffect(() => {
 , [cloudinaryUrl]);
 
 
+// useEffect(() => {
+//   if(showCookiesOnFirstVisit){
+//    setTimeout(() => {
+//       setShowCookiesOnFirstVisit(false)
+//     }
+//     , 10000);
+//   }
+// }
+// , [showCookiesOnFirstVisit]);
 
   return (
-    <>
-     <div className='min-h-screen  flex justify-center items-center m-auto flex-col gap-y-2'>
-        <h1 className='text-4xl font-bold '>Transcribe your audio</h1>
-        <p className='text-lg pb-3'>Upload an audio file and we&apos;ll transcribe it for you</p>
+    <div  className='min-h-screen flex justify-center items-center  overflow-hidden flex-col gap-y-2'>
+      {
+        showCookiesOnFirstVisit && (
+          <div className='flex flex-col gap-y-2 p-3 justify-center items-center
+          bottom-0 right-0   bg-neutral-50
+          filter drop-shadow-md
+          fixed z-50
+           max-w-[500px] mx-auto
+           max-h-[200px]
+           my-auto
+            backdrop-blur-lg
+            rounded-md
+            smooth
+          '
+        
+          >
+            <p className='text-neutral-800'>
+              We use cookies to ensure you get the best experience on our website
+            </p>
+            <p className='text-neutral-800'>
+              By continuing to use this website, you agree to our use of cookies
+            </p>
+            <div className='flex flex-row gap-x-2'>
+            <Button onClick={() => setShowCookiesOnFirstVisit(false)} className='bg-neutral-700 text-white'>
+              Accept
+            </Button>
+            <Button onClick={() => setShowCookiesOnFirstVisit(false)} className='bg-neutral-700 text-white'>
+              Learn more
+            </Button>
+            </div>
+
+          </div>
+
+        )
+      }
+     <div className='  flex justify-center items-center  flex-col gap-y-2'>
+        <h1 className='text-4xl font-bold  flex flex-row'>Transcribe your audio
+         <span className='text-neutral-700 sm:block hidden'> ...</span>
+        </h1>
+        <p className='sm:text-lg text-sm pb-3'>Upload an audio file and we&apos;ll transcribe it for you</p>
 
         {
           uploading && (
             <div className='flex flex-col gap-y-3 p-3 justify-center items-center'>
               <Loader className='text-neutral-800 animate-spin' size={32} />
-              <p className='text-neutral-800'>Uploading to Cloudinary</p>
+              <p className='text-neutral-800'>
+                Please wait, We&apos;re converting your audio!
+              </p>
             </div>
           )
         }
@@ -157,9 +208,10 @@ useEffect(() => {
 
     <Dialog >
     <DialogTrigger>
-      <a  className='bg-neutral-950 text-white p-3 rounded-md'
+      <a  className='bg-neutral-950  p-3 rounded-md flex justify-center items-center gap-x-2'
       onClick={() => setShowModal(true)}>
-        Upload Audio
+         <Edit3 size={24} className='text-white' />
+          <span className='text-white'>Upload audio</span>
       </a>
     </DialogTrigger>
     {
@@ -181,6 +233,12 @@ useEffect(() => {
               if(file) {
                 if(file?.size > 10000000) {
                   toast.error('File size exceeds 10mb')
+                  setShowModal(false)
+                  return
+                }
+                /* not less 500kbs */
+                if(file?.size < 500000) {
+                  toast.error('File size must be greater than 500kb')
                   setShowModal(false)
                   return
                 }
@@ -240,13 +298,16 @@ useEffect(() => {
         isTranscribing && (
           <Drawer
           open={isTranscribing}
-          onClose={() => setIsTranscribing(false)}
+         
         >
           <DrawerContent className='flex flex-col justify-center items-center mx-auto gap-y-2'>
             <DrawerHeader>
               <DrawerTitle>Transcribing</DrawerTitle>
               <DrawerDescription>
                Please wait, this may take a while
+              </DrawerDescription>
+              <DrawerDescription>
+               You can close this window and continue with other tasks
               </DrawerDescription>
             </DrawerHeader>
             <DrawerFooter>
@@ -261,8 +322,13 @@ useEffect(() => {
 
    
 
-    
-    </>
+<div className='flex flex-row justify-center items-center gap-x-1  py-2 mt-10'>
+          <span className='text-neutral-700 text-sm'>Made with ❤️ by</span>
+          <a href='https://www.francismwaniki.tech' target='_blank' className='text-neutral-700 text-sm'>Francis Mwaniki</a>
+          <span className='text-neutral-700 text-sm'>|</span>
+          <a href='https://www.github.com/Francis-Mwaniki' target='_blank' className='text-neutral-700 text-sm'>Github</a>
+           </div>
+    </div>
     
   )
 }
