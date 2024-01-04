@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/drawer"
 
 import { Input } from '@/components/ui/input';
-import { Check, Edit, Edit3, Loader } from 'lucide-react';
+import { Check, Copy, Edit, Edit3, Loader } from 'lucide-react';
 
 type Props = {}
 
@@ -39,8 +39,11 @@ const [error, setError] = React.useState<string>('')
 const [showModal, setShowModal] = React.useState<boolean>(false)
 const [isTranscribing,setIsTranscribing] =React.useState<boolean>(false)
 const [showCookiesOnFirstVisit, setShowCookiesOnFirstVisit] = React.useState<boolean>(true)
+const [isOverflowVisible, setIsOverflowVisible] = React.useState<boolean>(true)
+const [isCopied, setIsCopied] = React.useState<boolean>(false)
 
 const uploadFile = async (file: string | Blob) => {
+  
   setupLoading(true);
   toast.success('Uploading started...');
   const cloudName = 'dzvtkbjhc'; // Replace with your Cloudinary cloud name
@@ -96,6 +99,16 @@ useEffect(() => {
 
 
 
+const handleCopyToClipboard = () => {
+  const url = 'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3';
+  navigator.clipboard.writeText(url);
+  setIsCopied(true);
+  toast.success('Copied to clipboard');
+};
+
+const toggleOverflow = () => {
+  setIsOverflowVisible(true);
+};
 
 const transcribeAudio = async () => {
   setIsTranscribing(true);
@@ -114,6 +127,42 @@ const transcribeAudio = async () => {
       setTranscribedText(data.transcript);
       localStorage.setItem('transcribedText', data.transcript);
       localStorage.setItem('audioUrl', cloudinaryUrl);
+      setIsTranscribing(false);
+      //trim to 30 words
+      const encodedUrl = encodeURIComponent(data.transcript.slice(0, 30));
+      console.log("encodedUrl", encodedUrl);
+      
+         router.push(`/transcribe/${encodedUrl}`)
+    
+    } else {
+      setIsTranscribing(false);
+      console.log(response);
+    }
+  } catch (error) {
+    setIsTranscribing(false);
+    console.error('Error:', error);
+  }
+};
+
+/* TESTING  */
+
+const testingTranscribeAudio = async () => {
+  setIsTranscribing(true);
+  try {
+    const response = await fetch('/api/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      /*  'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3' */ 
+      body: JSON.stringify({ audioUrl: 'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3' })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setTranscribedText(data.transcript);
+      localStorage.setItem('transcribedText', data.transcript);
+      localStorage.setItem('audioUrl', 'https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3');
       setIsTranscribing(false);
       //trim to 30 words
       const encodedUrl = encodeURIComponent(data.transcript.slice(0, 30));
@@ -194,6 +243,29 @@ useEffect(() => {
         </h1>
         <p className='sm:text-lg text-sm pb-3'>Upload an audio file and we&apos;ll transcribe it for you</p>
 
+        {/* for testing use this https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3 to transcribe */}
+
+        <div  className=' text-sm text-gray-500 flex justify-center items-center sm:flex-row flex-col gap-y-4 my-3 gap-x-2'>
+          <span className=''>For testing purposes, you can use this</span>
+           {/* copy  */}
+           <span
+    className='cursor-pointer text-blue-500 w-50 inline-flex justify-center items-center gap-x-1 flex-row'
+    onClick={handleCopyToClipboard}
+  >
+    {/* Apply overflow styles to control text display */}
+    <span
+      className={`inline-block  overflow-hidden${isOverflowVisible ? ' w-[150px] py-1 bg-gray-300 rounded overflow-x-auto' : ''}`}
+      style={{ maxWidth: '100%', whiteSpace: 'nowrap' }}
+      onClick={toggleOverflow}
+    >
+      https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3
+      
+    </span>
+    <Copy size={16} className='text-blue-500' />
+  </span>
+
+        </div>
+
         {
           uploading && (
             <div className='flex flex-col gap-y-3 p-3 justify-center items-center'>
@@ -242,11 +314,7 @@ useEffect(() => {
                   setShowModal(false)
                   return
                 }
-                if(!file.type.includes('audio')) {
-                  toast.error('File must be an audio file')
-                  return
-                }
-                
+                 
                 else {
                   const url = URL.createObjectURL(file)
                 setPreviewUrl(url)
@@ -291,6 +359,30 @@ useEffect(() => {
             </Button>
           </div>
        )
+     }
+     {
+      /* Testing only */
+      
+        isCopied && (
+          <div className='flex flex-col gap-y-3 p-3'>
+            <audio controls src="https://storage.googleapis.com/aai-web-samples/5_common_sports_injuries.mp3"></audio>
+            <Button 
+            className={` ${uploading ? 'bg-gray-500 cursor-not-allowed' : ''} text-white`}
+            disabled={uploading}
+            onClick={() => testingTranscribeAudio()}
+           
+            >
+              {
+                isTranscribing ? (
+                  <Loader className='text-neutral-100 animate-spin' size={32} />
+                ) : (
+                  'simulate transcribe'
+                )
+              }
+            </Button>
+          </div>
+       )
+     
      }
      </div>
 
