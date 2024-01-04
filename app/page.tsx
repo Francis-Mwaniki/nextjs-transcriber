@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/drawer"
 
 import { Input } from '@/components/ui/input';
-import { Edit, Edit3, Loader } from 'lucide-react';
+import { Check, Edit, Edit3, Loader } from 'lucide-react';
 
 type Props = {}
 
@@ -156,11 +156,12 @@ useEffect(() => {
     <div  className='min-h-screen flex justify-center items-center  overflow-hidden flex-col gap-y-2'>
       {
         showCookiesOnFirstVisit && (
-          <div className='flex flex-col gap-y-2 p-3 justify-center items-center
+          <div className='flex flex-col gap-y-2 p-3 
           bottom-0 right-0   bg-neutral-50
-          filter drop-shadow-md
+          filter drop-shadow-lg
+          shadow-lg
           fixed z-50
-           max-w-[500px] mx-auto
+           max-w-[400px] mx-auto
            max-h-[200px]
            my-auto
             backdrop-blur-lg
@@ -169,19 +170,18 @@ useEffect(() => {
           '
         
           >
-            <p className='text-neutral-800'>
+            <p className='text-neutral-800  text-sm text-start'>
               We use cookies to ensure you get the best experience on our website
             </p>
-            <p className='text-neutral-800'>
-              By continuing to use this website, you agree to our use of cookies
+            <p className='text-neutral-800   text-sm text-start'>
+              We do not store any of your data
             </p>
-            <div className='flex flex-row gap-x-2'>
-            <Button onClick={() => setShowCookiesOnFirstVisit(false)} className='bg-neutral-700 text-white'>
-              Accept
+            <div className='flex flex-row gap-x-2 w-full'>
+            <Button onClick={() => setShowCookiesOnFirstVisit(false)} className='bg-neutral-700 text-white flex justify-center items-center justify-self-center w-full'>
+              <Check size={24} className='text-white' />
+              <span className='text-white'>Got it</span>
             </Button>
-            <Button onClick={() => setShowCookiesOnFirstVisit(false)} className='bg-neutral-700 text-white'>
-              Learn more
-            </Button>
+            
             </div>
 
           </div>
@@ -190,7 +190,7 @@ useEffect(() => {
       }
      <div className='  flex justify-center items-center  flex-col gap-y-2'>
         <h1 className='text-4xl font-bold  flex flex-row'>Transcribe your audio
-         <span className='text-neutral-700 sm:block hidden'> ...</span>
+         <span className='text-gray-500 sm:block hidden'> ...</span>
         </h1>
         <p className='sm:text-lg text-sm pb-3'>Upload an audio file and we&apos;ll transcribe it for you</p>
 
@@ -323,10 +323,10 @@ useEffect(() => {
    
 
 <div className='flex flex-row justify-center items-center gap-x-1  py-2 mt-10'>
-          <span className='text-neutral-700 text-sm'>Made with ❤️ by</span>
-          <a href='https://www.francismwaniki.tech' target='_blank' className='text-neutral-700 text-sm'>Francis Mwaniki</a>
-          <span className='text-neutral-700 text-sm'>|</span>
-          <a href='https://www.github.com/Francis-Mwaniki' target='_blank' className='text-neutral-700 text-sm'>Github</a>
+          <span className='text-gray-500 text-sm'>Made with ❤️ by</span>
+          <a href='https://www.francismwaniki.tech' target='_blank' className='text-gray-500 text-sm'>Francis Mwaniki</a>
+          <span className='text-gray-500 text-sm'>|</span>
+          <a href='https://www.github.com/Francis-Mwaniki' target='_blank' className='text-gray-500 text-sm'>Github</a>
            </div>
     </div>
     
