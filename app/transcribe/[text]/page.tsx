@@ -154,25 +154,21 @@ const paragraphWithBreaks = groupedSentences
     }
   };
   
-  const shareText = () => {
-    if (navigator.share) {
-      navigator
-        .share({
+  const shareText = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
           title: 'Audio Text',
           text: paragraphWithBreaks,
-          url: window.location.href,
-        })
-        .then(() => {
-          toast.success('Shared');
-          console.log('Shared');
-        })
-        .catch((error) => {
-          toast.error('Error sharing');
-          console.log('Error sharing', error);
-        })
-    } else {
-      toast.error('Share not supported');
-      console.log('Share not supported');
+        });
+        toast.success('Shared');
+        console.log('Shared');
+      } else {
+        throw new Error('Share not supported');
+      }
+    } catch (error) {
+      toast.error('Error sharing');
+      console.error('Error sharing', error);
     }
   };
 
@@ -217,6 +213,14 @@ const paragraphWithBreaks = groupedSentences
     saveAs(blob, 'audio-text.txt');
   };
 
+
+  /* compute two first word in newText and return as for title */
+  const firstTwoWords = ()=>{
+    const words = newText.split(' ');
+    const firstTwo = words.slice(0, 2).join(' ');
+    return firstTwo;
+  }
+  
  
 
   return (
@@ -314,16 +318,16 @@ const paragraphWithBreaks = groupedSentences
 </div>
 
 {/* share text */}
-<Button className='flex flex-row justify-center items-center gap-x-1'
+<Button className='flex sm:hidden flex-row justify-center items-center gap-x-1'
 onClick={() => {
-  shareText
+  shareText();
 }
 }
 >
   <Share className='text-neutral-100 cursor-pointer' size={24} />
   <span className='text-neutral-100 text-sm'>Share</span>
 </Button>
-<Button onClick={handleExportPDF} className='bg-neutral-700 cursor-pointer z-10 w-[140px]  flex gap-x-2  '>
+<Button onClick={handleExportPDF} className='bg-neutral-700 cursor-pointer z-10 w-[140px]  sm:flex hidden gap-x-2  '>
         <DownloadCloudIcon size={30}
          className={`
           text-white
@@ -352,7 +356,9 @@ onClick={() => {
       <div className="mt-4  sm:absolute sm:w-[80%] w-[100%] sm:left-[20%] px-2 sm:overflow-hidden sm:bg-white rounded-lg">
     
         <div id="textToExport" className=' overflow-y-auto sm:max-h-[500px] max-h-[90%] bg-neutral-100 max-w-[100%]  m-auto sm:p-3 p-3  rounded-lg '>
-          <h1 className='text-3xl font-bold text-center my-2'>Audio Text</h1>
+          <h1 className='text-3xl font-bold text-center my-2'>
+            {firstTwoWords()}...
+          </h1>
         <div className='flex flex-col justify-center items-center mx-auto gap-y-2 sm:shadow-none shadow'>
         <div className='text-neutral-800 text-center px-1 sm:px-5 rounded-lg py-2  sm:max-w-[80%] sm:shadow shadow-none' style={{ textAlign: 'justify', whiteSpace: 'pre-wrap' }}>
       {paragraphWithBreaks}
