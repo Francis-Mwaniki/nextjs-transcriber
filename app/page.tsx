@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/drawer"
 
 import { Input } from '@/components/ui/input';
-import { Check, Copy, Edit, Edit3, Loader } from 'lucide-react';
+import { Check, Copy, Edit, Edit3, Loader, PointerIcon } from 'lucide-react';
 
 type Props = {}
 
@@ -247,7 +247,8 @@ useEffect(() => {
 
         <div  className=' text-sm text-gray-500 flex justify-center items-center sm:flex-row flex-col gap-y-4 my-3 gap-x-2'>
           <span className=''>For testing purposes, you can use this</span>
-           {/* copy  */}
+
+           
            <span
     className='cursor-pointer text-blue-500 w-50 inline-flex justify-center items-center gap-x-1 flex-row'
     onClick={handleCopyToClipboard}
@@ -264,7 +265,12 @@ useEffect(() => {
     <Copy size={16} className='text-blue-500' />
   </span>
 
+
         </div>
+        <span className='text-gray-500 italic text-sm flex justify-center items-center gap-x-2 flex-row'>
+            <span>click copy Icon to simulate transcribe</span>
+            <PointerIcon size={16} className='text-gray-500' />
+          </span>
 
         {
           uploading && (
